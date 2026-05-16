@@ -1,0 +1,39 @@
+services:
+  scenema-audio-bf16:
+    build: .
+    ports:
+      - "8003:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - GEMMA_QUANTIZE=nf4
+      - GEMMA_REPO=unsloth/gemma-3-12b-it-bnb-4bit
+      - GEMMA_OFFLOAD=unload
+      - ENABLE_GRADIO=1
+      - AUDIO_CKPT=/app/models/scenema-audio-transformer.safetensors
+      - VAE_ENCODER_CKPT=/app/models/scenema-audio-vae-encoder.safetensors
+      - PIPELINE_CKPT=/app/models/scenema-audio-pipeline.safetensors
+      - GEMMA_ROOT=/app/models/gemma-3-12b-it-bnb-4bit
+      - MELBAND_MODEL_PATH=/app/models/MelBandRoformer_fp16.safetensors
+      - SEEDVC_PATH=/app/seed-vc
+      - MODEL_DIR=/app/models
+      - OUTPUT_DIR=/app/outputs
+      - PORT=8000
+    volumes:
+      - model-cache:/app/models
+      - seedvc-checkpoints:/app/seed-vc/checkpoints
+      - ${SCENEMA_OUTPUT_DIR:-./outputs}:/app/outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  model-cache:
+    external: true
+    name: scenema-audio_model-cache
+  seedvc-checkpoints:
+    external: true
+    name: scenema-audio_seedvc-checkpoints

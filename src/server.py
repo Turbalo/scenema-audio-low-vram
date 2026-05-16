@@ -57,10 +57,16 @@ def _download_models():
         str(MODEL_DIR / "scenema-audio-transformer-int8.safetensors"),
     ))
     if not audio_ckpt.exists():
-        logger.info("Downloading audio transformer (INT8, ~4.9 GB)...")
+        audio_filename = audio_ckpt.name
+        if audio_filename not in {
+            "scenema-audio-transformer-int8.safetensors",
+            "scenema-audio-transformer.safetensors",
+        }:
+            audio_filename = "scenema-audio-transformer-int8.safetensors"
+        logger.info("Downloading audio transformer %s...", audio_filename)
         hf_hub_download(
             HF_REPO,
-            "scenema-audio-transformer-int8.safetensors",
+            audio_filename,
             local_dir=str(audio_ckpt.parent),
             token=token,
         )

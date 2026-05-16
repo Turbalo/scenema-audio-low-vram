@@ -148,3 +148,5 @@ docker compose restart scenema-audio
 ```
 
 Full Gemma is optional and not part of normal startup. See [docs/optional-full-gemma.md](docs/optional-full-gemma.md).
+
+bf16 audio transformer mode is also optional and not part of normal startup. See [docs/optional-bf16-audio.md](docs/optional-bf16-audio.md).

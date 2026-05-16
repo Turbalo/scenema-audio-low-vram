@@ -5,6 +5,7 @@
 - adds a Windows/WSL Docker runtime for 16 GB VRAM systems
 - adds NF4 Gemma low-VRAM mode as the default runtime
 - keeps full Gemma CPU-streaming as an optional comparison mode only
+- adds optional bf16 Scenema audio transformer comparison mode
 - pre-encodes all chunk text conditioning before audio diffusion, then unloads Gemma
 - adds progress/cancel API endpoints and Gradio progress UI
 - autosaves WAV and JSON metadata to `OUTPUT_DIR`
@@ -29,6 +30,7 @@ All runs used seed `120`, `background_sfx=true`, `validate=false`, RTX 4080 SUPE
 - Russian stress/pronunciation errors remained in both modes, so the issue is likely not caused only by Gemma quantization.
 - WSL/Docker volume model storage avoids slow Windows bind-mount model reads.
 - The default install does not download the full `google/gemma-3-12b-it` checkpoint.
+- The default install still uses INT8 audio; bf16 audio is separate on port 8003.
 
 ## Test
 

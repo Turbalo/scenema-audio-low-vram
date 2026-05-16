@@ -52,6 +52,8 @@ Outputs are saved to `./outputs` by default. To use another folder:
 
 The default install does not download the full `google/gemma-3-12b-it` checkpoint. Full Gemma comparison is documented as an optional path in [docs/optional-full-gemma.md](docs/optional-full-gemma.md).
 
+The default install also uses the INT8 Scenema audio transformer. The official bf16 audio transformer can be tested separately with [docs/optional-bf16-audio.md](docs/optional-bf16-audio.md).
+
 ## How It Runs On 16 GB VRAM
 
 The low-VRAM path keeps only the model needed for the current phase active:
@@ -113,6 +115,7 @@ Takeaway:
 - [docker-compose.yml](docker-compose.yml) - base service.
 - [docker-compose.override.yml](docker-compose.override.yml) - default low-VRAM NF4 mode.
 - [docs/optional-full-gemma.md](docs/optional-full-gemma.md) - optional full Gemma comparison mode.
+- [docs/optional-bf16-audio.md](docs/optional-bf16-audio.md) - optional bf16 Scenema audio transformer comparison mode.
 - [LOCAL-RUN.md](LOCAL-RUN.md) - short local operations guide.
 - [PULL_REQUEST.md](PULL_REQUEST.md) - prepared PR text.
 - [.env.example](.env.example) - optional local environment template without secrets.
