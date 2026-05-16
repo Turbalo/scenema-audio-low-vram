@@ -1,0 +1,9 @@
+services:
+  scenema-audio:
+    volumes:
+      - seedvc-checkpoints:/app/seed-vc/checkpoints
+
+volumes:
+  seedvc-checkpoints:
+    external: true
+    name: scenema-audio_seedvc-checkpoints
