@@ -18,6 +18,8 @@ Gemma remains in the low-VRAM NF4 unload mode. This isolates the test to the Sce
 
 The bf16 audio transformer is about twice as large as the INT8 transformer. On 16 GB VRAM this can be unstable or slower, especially when validation, vocal separation, or SeedVC are enabled.
 
+64 GB system RAM is recommended for this mode. The runtime offloads Scenema audio models before Gemma text encoding, Whisper validation, and SeedVC, which helps VRAM but increases RAM and model reload pressure.
+
 Use this mode for A/B quality checks, not as the default runtime.
 
 ## Start
@@ -42,5 +44,6 @@ Stop:
 
 - First start downloads `scenema-audio-transformer.safetensors` if it is missing.
 - The file is stored in the same Docker model volume as the INT8 checkpoint.
+- This mode sets `OFFLOAD_AUDIO_BEFORE_AUX=1` automatically.
 - Default low-VRAM mode remains unchanged on port 8000.
 - Optional full Gemma mode remains separate on port 8002.

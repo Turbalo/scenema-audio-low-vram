@@ -4,6 +4,8 @@ Run [Scenema Audio](https://huggingface.co/ScenemaAI/scenema-audio) on a 16 GB V
 
 This repo contains runtime code, Docker files, launch scripts, and UI/API improvements. It does not include or redistribute model weights.
 
+![Model swap pipeline](docs/assets/model-swap-pipeline.png)
+
 ## Quick Start
 
 Prerequisites:
@@ -23,6 +25,8 @@ Then open:
 ```text
 http://127.0.0.1:8000/ui/
 ```
+
+Need step-by-step setup? See [LOCAL-RUN.md](LOCAL-RUN.md).
 
 If the script cannot find a Hugging Face token, run `huggingface-cli login` or set:
 
@@ -52,7 +56,7 @@ Outputs are saved to `./outputs` by default. To use another folder:
 
 The default install does not download the full `google/gemma-3-12b-it` checkpoint. Full Gemma comparison is documented as an optional path in [docs/optional-full-gemma.md](docs/optional-full-gemma.md).
 
-The default install also uses the INT8 Scenema audio transformer. The official bf16 audio transformer can be tested separately with [docs/optional-bf16-audio.md](docs/optional-bf16-audio.md).
+The default install also uses the INT8 Scenema audio transformer. The official bf16 audio transformer can be tested separately with [docs/optional-bf16-audio.md](docs/optional-bf16-audio.md). bf16 mode is more memory hungry; 64 GB system RAM is recommended.
 
 ## How It Runs On 16 GB VRAM
 
@@ -90,6 +94,14 @@ GEMMA_ROOT=/app/models/gemma-3-12b-it-bnb-4bit
 GEMMA_QUANTIZE=nf4
 GEMMA_OFFLOAD=unload
 ```
+
+Optional auxiliary offload:
+
+```text
+OFFLOAD_AUDIO_BEFORE_AUX=1
+```
+
+Default INT8 mode leaves this off unless you enable it in `.env`. bf16 audio mode enables it automatically. When enabled, the runtime offloads Scenema audio models before Gemma text encoding, Whisper validation, and SeedVC. This reduces VRAM pressure around auxiliary phases, but can increase RAM pressure and model reload time.
 
 ## Benchmarks
 
@@ -149,6 +161,8 @@ Successful generations return base64 WAV audio and are also saved to `OUTPUT_DIR
 - NVMe storage is strongly recommended because unloaded models are later read back from Docker/WSL storage into RAM and then VRAM.
 - The Stop button is cooperative. It stops between model phases, not in the middle of a CUDA kernel.
 - WSL/Docker can keep disk cache visible in `VmmemWSL` after large model reads.
+- The runtime trims Python/CUDA allocator memory after requests to reduce RSS growth across repeated generations.
+- Optional bf16 audio mode enables extra audio-model offload before Gemma, Whisper, and SeedVC phases.
 - This repo does not change model licenses. Model access and use remain governed by each upstream project.
 
 ## Credits

@@ -8,6 +8,8 @@ Handles HTTP sync/async requests for audio generation and voice design.
 Follows the pattern of gpu_x2v/processor.py.
 """
 
+import ctypes
+import gc
 import io
 import logging
 import os
@@ -63,6 +65,10 @@ class AudioProcessor:
         self._http_client = None
         self.progress_callback = None
         self.cancel_callback = None
+        self._offload_audio_before_aux = (
+            os.environ.get("OFFLOAD_AUDIO_BEFORE_AUX", "0").lower()
+            in {"1", "true", "yes", "on"}
+        )
 
     def _progress(self, percent: int, stage: str, detail: str = "") -> None:
         if self.cancel_callback is not None and self.cancel_callback():
@@ -204,6 +210,54 @@ class AudioProcessor:
                     torch.cuda.empty_cache()
                 except Exception:
                     pass
+            self._memory_hygiene("request cleanup")
+
+    def _memory_hygiene(self, reason: str) -> None:
+        """Release idle Python/CUDA allocator memory after heavy model phases."""
+        logger.debug("Running memory hygiene after %s", reason)
+        try:
+            current = psutil.Process()
+            for child in current.children(recursive=True):
+                cmdline = " ".join(child.cmdline()).lower()
+                if "torch/_inductor" in cmdline or "compile_worker" in cmdline:
+                    child.terminate()
+            _, alive = psutil.wait_procs(current.children(recursive=True), timeout=1)
+            for child in alive:
+                cmdline = " ".join(child.cmdline()).lower()
+                if "torch/_inductor" in cmdline or "compile_worker" in cmdline:
+                    child.kill()
+        except Exception:
+            logger.debug("Compile worker cleanup failed", exc_info=True)
+
+        try:
+            gc.collect()
+        except Exception:
+            pass
+        if torch.cuda.is_available():
+            try:
+                torch.cuda.empty_cache()
+                torch.cuda.ipc_collect()
+            except Exception:
+                logger.debug("CUDA allocator cleanup failed", exc_info=True)
+        try:
+            ctypes.CDLL("libc.so.6").malloc_trim(0)
+        except Exception:
+            logger.debug("malloc_trim unavailable", exc_info=True)
+
+    def _offload_audio_for_auxiliary_model(self, reason: str) -> None:
+        """Optionally free Scenema audio VRAM before Gemma, Whisper, or SeedVC."""
+        if (
+            not self._offload_audio_before_aux
+            or self.engine is None
+            or getattr(self, "_keep_resident", False)
+        ):
+            return
+        logger.info("Offloading Scenema audio models before %s", reason)
+        try:
+            self.engine.idle_offload()
+        except Exception:
+            logger.debug("AudioEngine idle offload failed before %s", reason, exc_info=True)
+        self._memory_hygiene(reason)
 
     def _parse_input(self, job: ProcessJob) -> dict:
         """Parse and validate job input.
@@ -316,6 +370,7 @@ class AudioProcessor:
             )
 
         with torch.inference_mode():
+            self._offload_audio_for_auxiliary_model("Gemma text encoding")
             results = generate_chunks(
                 self.engine,
                 chunks,
@@ -324,6 +379,7 @@ class AudioProcessor:
                 validate=config["validate"],
                 min_match_ratio=config["min_match_ratio"],
                 progress_callback=self._progress,
+                before_validation_callback=self._offload_audio_for_auxiliary_model,
             )
 
         self._progress(70, "Combining chunks", "Concatenating generated audio")
@@ -346,6 +402,7 @@ class AudioProcessor:
         needs_vc = ref_wav_path or len(results) > 1
         if not config["skip_vc"] and needs_vc:
             self._progress(88, "Voice conversion", "Applying SeedVC consistency pass")
+            self._offload_audio_for_auxiliary_model("SeedVC")
             wav = self._apply_seedvc(
                 wav,
                 sr,

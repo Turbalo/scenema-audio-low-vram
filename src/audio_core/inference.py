@@ -36,6 +36,7 @@ def generate_chunks(
     min_match_ratio: float = MIN_WORD_MATCH_RATIO,
     anchor_ref: bool = False,
     progress_callback=None,
+    before_validation_callback=None,
 ) -> list[AudioResult]:
     """Generate audio for all chunks with A2V voice conditioning.
 
@@ -125,6 +126,8 @@ def generate_chunks(
                         f"Chunk {i + 1}/{len(chunks)}: validation",
                         "Checking generated speech with Whisper",
                     )
+                if before_validation_callback:
+                    before_validation_callback("Whisper validation")
                 passed, transcribed, ratio = validate_text(
                     result.waveform_np,
                     result.sample_rate,

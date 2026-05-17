@@ -8,6 +8,12 @@ services:
       - GEMMA_QUANTIZE=nf4
       - GEMMA_REPO=unsloth/gemma-3-12b-it-bnb-4bit
       - GEMMA_OFFLOAD=unload
+      - OFFLOAD_AUDIO_BEFORE_AUX=1
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - TORCHINDUCTOR_COMPILE_THREADS=${TORCHINDUCTOR_COMPILE_THREADS:-1}
+      - OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
+      - MKL_NUM_THREADS=${MKL_NUM_THREADS:-1}
+      - TOKENIZERS_PARALLELISM=false
       - ENABLE_GRADIO=1
       - AUDIO_CKPT=/app/models/scenema-audio-transformer.safetensors
       - VAE_ENCODER_CKPT=/app/models/scenema-audio-vae-encoder.safetensors
