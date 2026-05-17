@@ -183,3 +183,21 @@ This runtime builds on:
 ## License
 
 Code changes are MIT-licensed where applicable, following the upstream repository. Model weights remain under their respective licenses and terms.
+
+## Security Notes
+
+The PowerShell files are plain-text launch helpers for Docker Compose. They are not obfuscated and do not download or execute hidden binaries outside the Docker runtime.
+
+VirusTotal API scan results for the tracked PowerShell scripts on 2026-05-17:
+
+| Script | SHA256 | VirusTotal result |
+|---|---|---|
+| `Generate-TestAudio.ps1` | `507f59f53fb58ebf40491ca8328fd1b401c8953e707eee1d96b7d252f48d17fc` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/507f59f53fb58ebf40491ca8328fd1b401c8953e707eee1d96b7d252f48d17fc)) |
+| `Install-And-Run.ps1` | `1b54bea310b340fe02c4bc389c001746ed4cf124d4527e8c4b49a7fa932080a8` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/1b54bea310b340fe02c4bc389c001746ed4cf124d4527e8c4b49a7fa932080a8)) |
+| `Start-ScenemaAudio-BF16Audio.ps1` | `09e281e2ef88e72da7092a38162bcb803474d7717b759593545583368e1076d6` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/09e281e2ef88e72da7092a38162bcb803474d7717b759593545583368e1076d6)) |
+| `Start-ScenemaAudio-FullGemma.ps1` | `cc508bf96d46d0f7ac9bbaa94d58f5f6e048fb0a8b2c887372b444e1a0f27c2f` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/cc508bf96d46d0f7ac9bbaa94d58f5f6e048fb0a8b2c887372b444e1a0f27c2f)) |
+| `Start-ScenemaAudio.ps1` | `6345bc98078296e030f12d48e1ca484df2a1efcb8c1874ff85e80b000dd121ab` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/6345bc98078296e030f12d48e1ca484df2a1efcb8c1874ff85e80b000dd121ab)) |
+| `Stop-ScenemaAudio-BF16Audio.ps1` | `998919de5a75c5602cad38899b927a291378c9b6978b56240aa2f157160ebc47` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/998919de5a75c5602cad38899b927a291378c9b6978b56240aa2f157160ebc47)) |
+| `Stop-ScenemaAudio-FullGemma.ps1` | `412e2587db5b2e93b02b31fe60659a2d9f12d9bdbadc9b855f2f34eaaac8f6b5` | 0 malicious / 0 suspicious ([report](https://www.virustotal.com/gui/file/412e2587db5b2e93b02b31fe60659a2d9f12d9bdbadc9b855f2f34eaaac8f6b5)) |
+
+VirusTotal results can change if files are re-analyzed later. Inspect the scripts before running them if your local policy requires it.
